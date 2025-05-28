@@ -23,7 +23,7 @@
         android:layout_height="wrap_content"
         android:layout_centerInParent="true"
         android:textColor="#FFFFFF"
-        android:textSize="16sp" />
+        android:textSize="32sp" />
 
     <!-- 简化的底部信息 -->
     <LinearLayout

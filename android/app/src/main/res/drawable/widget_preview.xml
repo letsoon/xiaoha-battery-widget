@@ -1,17 +1,33 @@
 <?xml version="1.0" encoding="utf-8"?>
 <layer-list xmlns:android="http://schemas.android.com/apk/res/android">
+    <!-- 背景 -->
     <item>
         <shape android:shape="rectangle">
+            <solid android:color="#2196F3" />
             <corners android:radius="16dp" />
-            <solid android:color="#80000000" />
-            <size
-                android:width="110dp"
-                android:height="50dp" />
+            <size android:width="180dp" android:height="180dp" />
         </shape>
     </item>
-    <item
-        android:width="24dp"
-        android:height="24dp"
-        android:drawable="@drawable/ic_battery_full"
-        android:gravity="center" />
-</layer-list>
+
+    <!-- 进度环背景 -->
+    <item android:gravity="center">
+        <shape android:shape="ring"
+            android:thickness="8dp"
+            android:useLevel="false">
+            <solid android:color="#4DFFFFFF" />
+            <size android:width="140dp" android:height="140dp" />
+        </shape>
+    </item>
+
+    <!-- 进度环前景（示例50%进度） -->
+    <item android:gravity="center">
+        <rotate android:fromDegrees="-90">
+            <shape android:shape="ring"
+                android:thickness="8dp"
+                android:useLevel="true">
+                <solid android:color="#FFFFFF" />
+                <size android:width="140dp" android:height="140dp" />
+            </shape>
+        </rotate>
+    </item>
+</layer-list> 
