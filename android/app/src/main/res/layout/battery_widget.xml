@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/widget_layout"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    android:background="@drawable/widget_background"
+    android:padding="4dp">
+
+    <!-- 简化的进度显示 -->
+    <ProgressBar
+        android:id="@+id/progress_circle"
+        style="?android:attr/progressBarStyleHorizontal"
+        android:layout_width="180dp"
+        android:layout_height="180dp"
+        android:layout_centerInParent="true"
+        android:background="@drawable/circle_shape_bg"
+        android:progressDrawable="@drawable/circle_shape_progress"
+        android:rotation="-90" />
+
+    <TextView
+        android:id="@+id/percent_text"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_centerInParent="true"
+        android:textColor="#FFFFFF"
+        android:textSize="16sp" />
+
+    <!-- 简化的底部信息 -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true"
+        android:orientation="horizontal"
+        android:padding="2dp">
+
+        <ImageView
+            android:id="@+id/logo"
+            android:layout_width="16dp"
+            android:layout_height="16dp" />
+
+        <TextView
+            android:id="@+id/battery_no"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:gravity="end"
+            android:textColor="#FFFFFF"
+            android:textSize="8sp" />
+    </LinearLayout>
+
+    <TextView
+        android:id="@+id/update_time"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentEnd="true"
+        android:layout_above="@id/battery_no"
+        android:textColor="#FFFFFF"
+        android:textSize="8sp" />
+</RelativeLayout> 

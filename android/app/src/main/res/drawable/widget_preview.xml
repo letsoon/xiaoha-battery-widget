@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<layer-list xmlns:android="http://schemas.android.com/apk/res/android">
+    <item>
+        <shape android:shape="rectangle">
+            <corners android:radius="16dp" />
+            <solid android:color="#80000000" />
+            <size
+                android:width="110dp"
+                android:height="50dp" />
+        </shape>
+    </item>
+    <item
+        android:width="24dp"
+        android:height="24dp"
+        android:drawable="@drawable/ic_battery_full"
+        android:gravity="center" />
+</layer-list>

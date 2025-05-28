@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">小哈电池小组件</string>
+    <string name="widget_name">电池状态</string>
+    <string name="configure">配置小组件</string>
+    <string name="add_widget">添加小组件</string>
+    <string name="battery_no_hint">请输入电池编号</string>
+    <string name="loading">加载中...</string>
+    <string name="error_loading">加载失败</string>
+    <string name="error_network">网络错误</string>
+</resources> 
