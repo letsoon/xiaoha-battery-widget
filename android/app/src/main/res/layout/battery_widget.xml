@@ -6,7 +6,7 @@
     android:background="@drawable/widget_background"
     android:padding="4dp">
 
-    <!-- 简化的进度显示 -->
+    <!-- 圆形进度条 -->
     <ProgressBar
         android:id="@+id/progress_circle"
         style="?android:attr/progressBarStyleHorizontal"
@@ -17,6 +17,7 @@
         android:progressDrawable="@drawable/circle_shape_progress"
         android:rotation="-90" />
 
+    <!-- 百分比文字 -->
     <TextView
         android:id="@+id/percent_text"
         android:layout_width="wrap_content"
@@ -25,35 +26,35 @@
         android:textColor="#FFFFFF"
         android:textSize="32sp" />
 
-    <!-- 简化的底部信息 -->
-    <LinearLayout
-        android:layout_width="match_parent"
+    <!-- logo 图标 -->
+    <ImageView
+        android:id="@+id/logo"
+        android:layout_width="16dp"
+        android:layout_height="16dp"
+        android:layout_alignParentBottom="true"
+        android:layout_alignParentStart="true"
+        android:layout_margin="2dp" />
+
+    <!-- 电池编号 -->
+    <TextView
+        android:id="@+id/battery_no"
+        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_alignParentBottom="true"
-        android:orientation="horizontal"
-        android:padding="2dp">
+        android:layout_alignParentEnd="true"
+        android:layout_margin="2dp"
+        android:textColor="#FFFFFF"
+        android:textSize="8sp" />
 
-        <ImageView
-            android:id="@+id/logo"
-            android:layout_width="16dp"
-            android:layout_height="16dp" />
-
-        <TextView
-            android:id="@+id/battery_no"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:gravity="end"
-            android:textColor="#FFFFFF"
-            android:textSize="8sp" />
-    </LinearLayout>
-
+    <!-- 更新时间，放在电池编号上方 -->
     <TextView
         android:id="@+id/update_time"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_alignParentEnd="true"
         android:layout_above="@id/battery_no"
+        android:layout_alignParentEnd="true"
+        android:layout_marginEnd="2dp"
         android:textColor="#FFFFFF"
         android:textSize="8sp" />
+
 </RelativeLayout>
