@@ -8,5 +8,5 @@ data class BatteryResponse(
 
 data class BatteryData(
     val batteryLife: Int,
-    val reportTime: String
+    val reportTime: Long
 ) 

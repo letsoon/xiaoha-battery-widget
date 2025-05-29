@@ -8,6 +8,7 @@ interface BatteryService {
     @GET("/")
     fun getBatteryInfo(
         @Query("batteryNo") batteryNo: String,
+        @Query("cityCode") cityCode: String,
         @Query("format") format: String = "json"
     ): Call<BatteryResponse>
 } 

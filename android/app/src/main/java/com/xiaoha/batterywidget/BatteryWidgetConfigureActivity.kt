@@ -1,68 +1,131 @@
 package com.xiaoha.batterywidget
 
-import android.app.Activity
 import android.appwidget.AppWidgetManager
 import android.content.Intent
+import android.content.Context
 import android.os.Bundle
 import android.view.View
-import android.widget.Button
-import android.widget.EditText
-import android.widget.Toast
+import android.widget.*
+import android.util.Log
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.lifecycleScope
 import kotlinx.coroutines.*
-import java.net.URL
-import kotlin.coroutines.CoroutineContext
 
-class BatteryWidgetConfigureActivity : AppCompatActivity(), CoroutineScope {
+class BatteryWidgetConfigureActivity : AppCompatActivity() {
     private var appWidgetId = AppWidgetManager.INVALID_APPWIDGET_ID
     private lateinit var batteryNoEdit: EditText
     private lateinit var cityCodeEdit: EditText
+    private lateinit var refreshIntervalSpinner: Spinner
     private lateinit var addButton: Button
+    private lateinit var loadingView: View
+    private lateinit var contentView: View
     
-    override val coroutineContext: CoroutineContext
-        get() = lifecycleScope.coroutineContext + Dispatchers.Main
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        
-        // 设置结果为取消，以防用户直接返回
-        setResult(Activity.RESULT_CANCELED)
-        
         setContentView(R.layout.battery_widget_configure)
 
-        // 获取小组件ID
+        // 获取小部件ID
         appWidgetId = intent?.extras?.getInt(
             AppWidgetManager.EXTRA_APPWIDGET_ID,
             AppWidgetManager.INVALID_APPWIDGET_ID
         ) ?: AppWidgetManager.INVALID_APPWIDGET_ID
 
-        if (appWidgetId == AppWidgetManager.INVALID_APPWIDGET_ID) {
-            finish()
-            return
-        }
+        // 初始化视图引用
+        initViews()
 
-        batteryNoEdit = findViewById(R.id.battery_no_edit)
-        cityCodeEdit = findViewById(R.id.city_code_edit)
-        addButton = findViewById(R.id.add_button)
-        addButton.setOnClickListener { confirmConfiguration() }
+        // 显示加载状态
+        showLoading(true)
 
-        // 设置默认城市代码
-        cityCodeEdit.setText("0755")
+        // 在后台初始化
+        lifecycleScope.launch {
+            try {
+                // 在后台线程准备数据
+                val initData = withContext(Dispatchers.Default) {
+                    val prefs = getSharedPreferences("BatteryWidgetPrefs", Context.MODE_PRIVATE)
+                    val savedBatteryNo = prefs.getString("batteryNo_$appWidgetId", "")
+                    val savedCityCode = prefs.getString("cityCode_$appWidgetId", "0755")
+                    val savedRefreshInterval = prefs.getInt("refreshInterval_$appWidgetId", 30)
+                    val refreshIntervals = resources.getStringArray(R.array.refresh_intervals)
+                    val intervals = resources.getIntArray(R.array.refresh_intervals)
+                    val position = intervals.indexOf(savedRefreshInterval)
+                    InitData(
+                        savedBatteryNo ?: "",
+                        savedCityCode ?: "0755",
+                        position,
+                        refreshIntervals
+                    )
+                }
 
-        // 加载已保存的电池编号
-        lifecycleScope.launch(Dispatchers.IO) {
-            val savedBatteryNo = getSharedPreferences("BatteryWidgetPrefs", MODE_PRIVATE)
-                .getString("batteryNo_$appWidgetId", "")
-            if (!savedBatteryNo.isNullOrEmpty()) {
+                // 在主线程更新UI
                 withContext(Dispatchers.Main) {
-                    batteryNoEdit.setText(savedBatteryNo)
+                    setupViews(initData)
+                    showLoading(false)
+                }
+            } catch (e: Exception) {
+                withContext(Dispatchers.Main) {
+                    Toast.makeText(this@BatteryWidgetConfigureActivity, 
+                        "初始化失败：${e.message}", 
+                        Toast.LENGTH_SHORT).show()
+                    finish()
                 }
             }
         }
     }
 
-    private fun confirmConfiguration() {
+    private fun initViews() {
+        loadingView = findViewById(R.id.loading_view)
+        contentView = findViewById(R.id.content_view)
+        batteryNoEdit = findViewById(R.id.battery_no_edit)
+        cityCodeEdit = findViewById(R.id.city_code_edit)
+        refreshIntervalSpinner = findViewById(R.id.refresh_interval_spinner)
+        addButton = findViewById(R.id.add_button)
+
+        // 添加 GitHub 链接点击事件
+        findViewById<View>(R.id.github_container).setOnClickListener {
+            try {
+                val intent = Intent(Intent.ACTION_VIEW).apply {
+                   data = android.net.Uri.parse(getString(R.string.github_link))
+                }
+                startActivity(intent)
+            } catch (e: Exception) {
+                Toast.makeText(this, "无法打开链接：${e.message}", Toast.LENGTH_SHORT).show()
+            }
+        }
+    }
+
+    private fun showLoading(show: Boolean) {
+        loadingView.visibility = if (show) View.VISIBLE else View.GONE
+        contentView.visibility = if (show) View.GONE else View.VISIBLE
+    }
+
+    private fun setupViews(initData: InitData) {
+        // 设置已保存的值
+        batteryNoEdit.setText(initData.batteryNo)
+        cityCodeEdit.setText(initData.cityCode)
+
+        // 设置刷新间隔选项
+        val adapter = ArrayAdapter(
+            this,
+            android.R.layout.simple_spinner_item,
+            initData.refreshIntervals
+        ).apply {
+            setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
+        }
+        refreshIntervalSpinner.adapter = adapter
+
+        // 设置已保存的刷新间隔
+        if (initData.refreshIntervalPosition != -1) {
+            refreshIntervalSpinner.setSelection(initData.refreshIntervalPosition)
+        }
+
+        // 设置保存按钮点击事件
+        addButton.setOnClickListener {
+            saveConfiguration()
+        }
+    }
+
+    private fun saveConfiguration() {
         val batteryNo = batteryNoEdit.text.toString().trim()
         val cityCode = cityCodeEdit.text.toString().trim().let {
             if (it.isEmpty()) "0755" else it
@@ -74,63 +137,60 @@ class BatteryWidgetConfigureActivity : AppCompatActivity(), CoroutineScope {
         }
 
         // 禁用输入和按钮
-        batteryNoEdit.isEnabled = false
-        cityCodeEdit.isEnabled = false
-        addButton.isEnabled = false
-        addButton.text = "验证中..."
+        setInputsEnabled(false)
+        addButton.text = "保存中..."
 
-        // 验证电池编号并保存配置
         lifecycleScope.launch {
             try {
-                // 在后台线程验证电池编号
-                val isValid = withContext(Dispatchers.IO) {
-                    try {
-                        val url = URL("https://xiaoha.deno.dev/?batteryNo=$batteryNo&cityCode=$cityCode&format=json")
-                        val response = withTimeout(5000) { // 添加5秒超时
-                            url.readText()
-                        }
-                        true
-                    } catch (e: Exception) {
-                        false
-                    }
+                // 保存配置
+                withContext(Dispatchers.IO) {
+                    val prefs = getSharedPreferences("BatteryWidgetPrefs", Context.MODE_PRIVATE)
+                    val editor = prefs.edit()
+                    
+                    // 保存电池号和城市代码
+                    editor.putString("batteryNo_$appWidgetId", batteryNo)
+                    editor.putString("cityCode_$appWidgetId", cityCode)
+                    
+                    // 保存刷新间隔
+                    val intervals = resources.getIntArray(R.array.refresh_intervals)
+                    val selectedInterval = intervals[refreshIntervalSpinner.selectedItemPosition]
+                    editor.putInt("refreshInterval_$appWidgetId", selectedInterval)
+                    
+                    editor.apply()
+
+                    // 更新小部件
+                    val appWidgetManager = AppWidgetManager.getInstance(this@BatteryWidgetConfigureActivity)
+                    val widget = BatteryWidget()
+                    widget.onUpdate(this@BatteryWidgetConfigureActivity, appWidgetManager, intArrayOf(appWidgetId))
                 }
 
-                if (isValid) {
-                    withContext(Dispatchers.IO) {
-                        // 保存配置
-                        getSharedPreferences("BatteryWidgetPrefs", MODE_PRIVATE)
-                            .edit()
-                            .putString("batteryNo_$appWidgetId", batteryNo)
-                            .putString("cityCode_$appWidgetId", cityCode)
-                            .apply()
-
-                        // 更新小组件
-                        val appWidgetManager = AppWidgetManager.getInstance(this@BatteryWidgetConfigureActivity)
-                        val widget = BatteryWidget()
-                        widget.onUpdate(this@BatteryWidgetConfigureActivity, appWidgetManager, intArrayOf(appWidgetId))
-                    }
-
-                    // 设置结果并关闭
-                    val resultValue = Intent()
-                    resultValue.putExtra(AppWidgetManager.EXTRA_APPWIDGET_ID, appWidgetId)
-                    setResult(Activity.RESULT_OK, resultValue)
-                    finish()
-                } else {
-                    showError("无效的电池编号")
-                }
+                // 设置结果并关闭活动
+                val resultValue = Intent().putExtra(AppWidgetManager.EXTRA_APPWIDGET_ID, appWidgetId)
+                setResult(RESULT_OK, resultValue)
+                finish()
             } catch (e: Exception) {
-                showError("配置失败：${e.message}")
+                withContext(Dispatchers.Main) {
+                    Toast.makeText(this@BatteryWidgetConfigureActivity, 
+                        "保存失败：${e.message}", 
+                        Toast.LENGTH_SHORT).show()
+                    setInputsEnabled(true)
+                    addButton.text = getString(R.string.add_widget)
+                }
             }
         }
     }
 
-    private fun showError(message: String) {
-        runOnUiThread {
-            Toast.makeText(this, message, Toast.LENGTH_SHORT).show()
-            batteryNoEdit.isEnabled = true
-            cityCodeEdit.isEnabled = true
-            addButton.isEnabled = true
-            addButton.text = "添加小组件"
-        }
+    private fun setInputsEnabled(enabled: Boolean) {
+        batteryNoEdit.isEnabled = enabled
+        cityCodeEdit.isEnabled = enabled
+        refreshIntervalSpinner.isEnabled = enabled
+        addButton.isEnabled = enabled
     }
+
+    private data class InitData(
+        val batteryNo: String,
+        val cityCode: String,
+        val refreshIntervalPosition: Int,
+        val refreshIntervals: Array<String>
+    )
 } 

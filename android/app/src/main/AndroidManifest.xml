@@ -34,7 +34,7 @@
             </intent-filter>
             <meta-data
                 android:name="android.appwidget.provider"
-                android:resource="@xml/battery_widget_info" />
+                android:resource="@layout/battery_widget" />
         </receiver>
     </application>
 </manifest> 
