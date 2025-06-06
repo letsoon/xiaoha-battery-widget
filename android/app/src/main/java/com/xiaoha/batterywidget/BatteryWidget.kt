@@ -6,6 +6,7 @@ import android.appwidget.AppWidgetManager
 import android.appwidget.AppWidgetProvider
 import android.content.Context
 import android.content.Intent
+import android.content.SharedPreferences
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.util.Base64
@@ -18,6 +19,8 @@ import java.util.*
 import java.util.concurrent.ConcurrentHashMap
 import android.os.SystemClock
 import com.xiaoha.batterywidget.api.BatteryService
+import okhttp3.OkHttpClient
+import okhttp3.logging.HttpLoggingInterceptor
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 import java.util.Date
@@ -31,13 +34,35 @@ class BatteryWidget : AppWidgetProvider() {
         private const val ACTION_REFRESH = "com.xiaoha.batterywidget.ACTION_REFRESH"
         private const val DOUBLE_CLICK_TIMEOUT = 500L // 双击超时时间（毫秒）
         private val lastClickTimes = mutableMapOf<Int, Long>() // 记录每个小部件的最后点击时间
-        
-        private val retrofit = Retrofit.Builder()
-            .baseUrl("https://xiaoha.deno.dev/")
-            .addConverterFactory(GsonConverterFactory.create())
-            .build()
 
-        private val apiService = retrofit.create(BatteryService::class.java)
+
+
+        private var apiService: BatteryService? = null
+        private lateinit var prefs: SharedPreferences
+        private lateinit var retrofit: Retrofit
+
+        fun init(context: Context) {
+            prefs = context.getSharedPreferences("BatteryWidgetPrefs", Context.MODE_PRIVATE)
+            val baseUrl = prefs.getString("base_url", "https://xiaoha.linkof.link/")!!
+
+
+
+            // 添加日志拦截器
+            val loggingInterceptor = HttpLoggingInterceptor().apply {
+                level = HttpLoggingInterceptor.Level.BODY // 可选：BASIC、HEADERS、BODY
+            }
+            val okHttpClient = OkHttpClient.Builder()
+                .addInterceptor(loggingInterceptor)
+                .build()
+
+            retrofit = Retrofit.Builder()
+                .baseUrl(baseUrl)
+                .addConverterFactory(GsonConverterFactory.create())
+                .client(okHttpClient) // 使用带日志的 OkHttpClient
+                .build()
+
+            apiService = retrofit.create(BatteryService::class.java)
+        }
     }
 
     private val coroutineScope = CoroutineScope(Dispatchers.Default + SupervisorJob())
@@ -49,7 +74,7 @@ class BatteryWidget : AppWidgetProvider() {
 
     override fun onUpdate(context: Context, appWidgetManager: AppWidgetManager, appWidgetIds: IntArray) {
         Log.d(TAG, "onUpdate called for widget IDs: ${appWidgetIds.joinToString()}")
-        
+        init(context)
         for (appWidgetId in appWidgetIds) {
             updateAppWidget(context, appWidgetManager, appWidgetId)
         }
@@ -163,29 +188,31 @@ class BatteryWidget : AppWidgetProvider() {
         CoroutineScope(Dispatchers.IO).launch {
             try {
                 val response = withTimeout(5000) {
-                    apiService.getBatteryInfo(batteryNo, cityCode).execute()
+                    apiService?.getBatteryInfo(batteryNo, cityCode)?.execute()
                 }
                 
                 withContext(Dispatchers.Main) {
-                    if (response.isSuccessful) {
-                        val batteryResponse = response.body()
-                        if (batteryResponse?.code == 0) {
-                            val batteryLife = batteryResponse.data.batteryLife
-                            val reportTime = Date(batteryResponse.data.reportTime)
-                            val formattedTime = dateFormat.format(reportTime)
-                            
-                            views.setProgressBar(R.id.progress_circle, 100, batteryLife, false)
-                            views.setTextViewText(R.id.percent_text, "$batteryLife%")
-                            views.setTextViewText(R.id.battery_no, batteryNo)
-                            views.setTextViewText(R.id.update_time, formattedTime)
-                             
+                    if (response != null) {
+                        if (response.isSuccessful) {
+                            val batteryResponse = response.body()
+                            if (batteryResponse?.code == 0) {
+                                val batteryLife = batteryResponse.data.batteryLife
+                                val reportTime = Date(batteryResponse.data.reportTime)
+                                val formattedTime = dateFormat.format(reportTime)
+
+                                views.setProgressBar(R.id.progress_circle, 100, batteryLife, false)
+                                views.setTextViewText(R.id.percent_text, "$batteryLife%")
+                                views.setTextViewText(R.id.battery_no, batteryNo)
+                                views.setTextViewText(R.id.update_time, formattedTime)
+
+                            } else {
+                                Log.e(TAG, "Error in API response: $batteryResponse")
+                                updateErrorState(views, "数据错误")
+                            }
                         } else {
-                            Log.e(TAG, "Error in API response: $batteryResponse")
-                            updateErrorState(views, "数据错误")
+                            Log.e(TAG, "Network request failed: ${response.code()} ${Companion.prefs.getString("base_url", "")}")
+                            updateErrorState(views, "网络错误")
                         }
-                    } else {
-                        Log.e(TAG, "Network request failed: ${response.code()}")
-                        updateErrorState(views, "网络错误")
                     }
                 }
             } catch (e: Exception) {
