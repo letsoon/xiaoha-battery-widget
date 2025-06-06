@@ -22,6 +22,7 @@
     <string name="battery_status">电池状态</string>
     <string name="github_link">https://github.com/bestK/xiaoha-battery-widget</string>
     <string-array name="refresh_intervals">
+        <item>1分钟</item>
         <item>5分钟</item>
         <item>15分钟</item>
         <item>30分钟</item>
@@ -31,6 +32,7 @@
         <item>8小时</item>
     </string-array>
     <integer-array name="refresh_interval_values">
+        <item>1</item>
         <item>5</item>
         <item>15</item>
         <item>30</item>

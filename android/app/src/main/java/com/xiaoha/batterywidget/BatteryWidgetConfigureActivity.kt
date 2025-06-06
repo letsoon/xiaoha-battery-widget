@@ -42,7 +42,7 @@ class BatteryWidgetConfigureActivity : AppCompatActivity() {
                     val prefs = getSharedPreferences("BatteryWidgetPrefs", Context.MODE_PRIVATE)
                     val savedBatteryNo = prefs.getString("batteryNo_$appWidgetId", "")
                     val savedCityCode = prefs.getString("cityCode_$appWidgetId", "0755")
-                    val savedRefreshInterval = prefs.getInt("refreshInterval_$appWidgetId", 30)
+                    val savedRefreshInterval = prefs.getInt("refreshInterval_$savedBatteryNo", 30)
                     val baseUrl = prefs.getString("baseUrl", "https://xiaoha.linkof.link")
                     val refreshIntervals = resources.getStringArray(R.array.refresh_intervals)
                     val intervals = resources.getIntArray(R.array.refresh_intervals)
@@ -147,9 +147,9 @@ class BatteryWidgetConfigureActivity : AppCompatActivity() {
                     editor.putString("cityCode_$appWidgetId", cityCode)
                     
                     // 保存刷新间隔
-                    val intervals = resources.getIntArray(R.array.refresh_intervals)
+                    val intervals = resources.getIntArray(R.array.refresh_interval_values)
                     val selectedInterval = intervals[refreshIntervalSpinner.selectedItemPosition]
-                    editor.putInt("refreshInterval_$appWidgetId", selectedInterval)
+                    editor.putInt("refreshInterval_$batteryNo", selectedInterval)
                     
                     editor.apply()
 
