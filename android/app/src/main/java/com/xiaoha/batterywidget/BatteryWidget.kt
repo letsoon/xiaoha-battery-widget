@@ -5,6 +5,7 @@ import android.app.AlarmManager
 import android.app.PendingIntent
 import android.appwidget.AppWidgetManager
 import android.appwidget.AppWidgetProvider
+import android.content.ComponentName
 import android.content.Context
 import android.content.Intent
 import android.content.SharedPreferences
@@ -98,7 +99,7 @@ class BatteryWidget : AppWidgetProvider() {
             // 1. 立即刷新
             updateAppWidget(context, appWidgetManager, appWidgetId, "onUpdate")
             // 2. 设置定时任务
-            setAlarmManager(context, batteryNo, prefs.getInt("refreshInterval_$appWidgetId", 30))
+            setAlarmManager(context, batteryNo, prefs.getInt("refreshInterval_$batteryNo", 5))
         }
     }
 
@@ -130,6 +131,7 @@ class BatteryWidget : AppWidgetProvider() {
         super.onReceive(context, intent)
 
         if (intent.action == ACTION_REFRESH) {
+            Log.i(TAG, "onReceive: ACTION_REFRESH")
             val appWidgetId = intent.getIntExtra(
                 AppWidgetManager.EXTRA_APPWIDGET_ID,
                 AppWidgetManager.INVALID_APPWIDGET_ID
@@ -157,6 +159,20 @@ class BatteryWidget : AppWidgetProvider() {
                     context.startActivity(configIntent)
                     // 记录点击时间用于双击检测
                     lastClickTimes[appWidgetId] = currentTime
+                }
+            }
+        } else if (intent.action == AppWidgetManager.ACTION_APPWIDGET_UPDATE) {
+            Log.i(TAG, "onReceive: ACTION_APPWIDGET_UPDATE")
+            val batteryNo = intent.getStringExtra("batteryNo")
+            if (!batteryNo.isNullOrEmpty()) {
+                val prefs = context.getSharedPreferences("BatteryWidgetPrefs", Context.MODE_PRIVATE)
+                val appWidgetManager = AppWidgetManager.getInstance(context)
+                val allWidgetIds = appWidgetManager.getAppWidgetIds(ComponentName(context, BatteryWidget::class.java))
+                for (widgetId in allWidgetIds) {
+                    val widgetBatteryNo = prefs.getString("batteryNo_$widgetId", "")
+                    if (widgetBatteryNo == batteryNo) {
+                        updateAppWidget(context, appWidgetManager, widgetId, "AlarmManager")
+                    }
                 }
             }
         }
@@ -212,7 +228,6 @@ class BatteryWidget : AppWidgetProvider() {
         val prefs = context.getSharedPreferences("BatteryWidgetPrefs", Context.MODE_PRIVATE)
         val batteryNo = prefs.getString("batteryNo_$appWidgetId", "") ?: ""
         val cityCode = prefs.getString("cityCode_$appWidgetId", "0755") ?: "0755"
-        val refreshInterval = prefs.getInt("refreshInterval_$appWidgetId", 30)
 
         if (batteryNo.isEmpty()) {
             Log.d(TAG, "No battery number configured for widget ID: $appWidgetId")
@@ -283,6 +298,7 @@ class BatteryWidget : AppWidgetProvider() {
     }
 
     private fun setAlarmManager(context: Context, batteryNo: String, refreshInterval: Int) {
+        Log.i(TAG, "setAlarmManager: add job batteryNo: $batteryNo refreshInterval: $refreshInterval")
         val alarmManager = context.getSystemService(Context.ALARM_SERVICE) as AlarmManager
         val updateIntent = Intent(context, BatteryWidget::class.java).apply {
             action = AppWidgetManager.ACTION_APPWIDGET_UPDATE
