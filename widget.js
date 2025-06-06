@@ -12,7 +12,7 @@ if (!batteryNo) {
     return;
 }
 
-const endpoint = `https://xiaoha.deno.dev/?batteryNo=${batteryNo}&format=json`;
+const endpoint = `https://xiaoha.linkof.link/?batteryNo=${batteryNo}&format=json`;
 
 async function createWidget() {
     try {
