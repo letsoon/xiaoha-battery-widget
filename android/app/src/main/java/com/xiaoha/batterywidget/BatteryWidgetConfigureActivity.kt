@@ -1,19 +1,25 @@
 package com.xiaoha.batterywidget
 
+import android.app.AlarmManager
 import android.appwidget.AppWidgetManager
 import android.content.Intent
-import android.content.Context
-import android.os.Bundle
-import android.view.View
-import android.widget.*
-import androidx.appcompat.app.AlertDialog
-
-import androidx.appcompat.app.AppCompatActivity
-import androidx.lifecycle.lifecycleScope
-import kotlinx.coroutines.*
-import android.app.AlarmManager
 import android.os.Build
+import android.os.Bundle
 import android.provider.Settings
+import android.view.View
+import android.widget.ArrayAdapter
+import android.widget.Button
+import android.widget.EditText
+import android.widget.Spinner
+import android.widget.Toast
+import androidx.appcompat.app.AlertDialog
+import androidx.appcompat.app.AppCompatActivity
+import androidx.core.content.edit
+import androidx.core.net.toUri
+import androidx.lifecycle.lifecycleScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 class BatteryWidgetConfigureActivity : AppCompatActivity() {
     private var appWidgetId = AppWidgetManager.INVALID_APPWIDGET_ID
@@ -43,13 +49,13 @@ class BatteryWidgetConfigureActivity : AppCompatActivity() {
             try {
                 // 在后台线程准备数据
                 val initData = withContext(Dispatchers.Default) {
-                    val prefs = getSharedPreferences("BatteryWidgetPrefs", Context.MODE_PRIVATE)
+                    val prefs = getSharedPreferences("BatteryWidgetPrefs", MODE_PRIVATE)
                     val savedBatteryNo = prefs.getString("batteryNo_$appWidgetId", "")
                     val savedCityCode = prefs.getString("cityCode_$appWidgetId", "0755")
-                    val savedRefreshInterval = prefs.getInt("refreshInterval_$savedBatteryNo", 30)
+                    val savedRefreshInterval = prefs.getInt("refreshInterval_$savedBatteryNo", 5)
                     val baseUrl = prefs.getString("baseUrl", "https://xiaoha.linkof.link")
                     val refreshIntervals = resources.getStringArray(R.array.refresh_intervals)
-                    val intervals = resources.getIntArray(R.array.refresh_intervals)
+                    val intervals = resources.getIntArray(R.array.refresh_interval_values)
                     val position = intervals.indexOf(savedRefreshInterval)
                     InitData(
                         savedBatteryNo.toString(),
@@ -86,7 +92,7 @@ class BatteryWidgetConfigureActivity : AppCompatActivity() {
         findViewById<View>(R.id.github_container).setOnClickListener {
             try {
                 val intent = Intent(Intent.ACTION_VIEW).apply {
-                   data = android.net.Uri.parse(getString(R.string.github_link))
+                   data = getString(R.string.github_link).toUri()
                 }
                 startActivity(intent)
             } catch (e: Exception) {
@@ -148,19 +154,19 @@ class BatteryWidgetConfigureActivity : AppCompatActivity() {
             try {
                 // 保存配置
                 withContext(Dispatchers.IO) {
-                    val prefs = getSharedPreferences("BatteryWidgetPrefs", Context.MODE_PRIVATE)
-                    val editor = prefs.edit()
-                    
-                    // 保存电池号和城市代码
-                    editor.putString("batteryNo_$appWidgetId", batteryNo)
-                    editor.putString("cityCode_$appWidgetId", cityCode)
-                    
-                    // 保存刷新间隔
-                    val intervals = resources.getIntArray(R.array.refresh_interval_values)
-                    val selectedInterval = intervals[refreshIntervalSpinner.selectedItemPosition]
-                    editor.putInt("refreshInterval_$batteryNo", selectedInterval)
-                    
-                    editor.apply()
+                    val prefs = getSharedPreferences("BatteryWidgetPrefs", MODE_PRIVATE)
+                    prefs.edit {
+
+                        // 保存电池号和城市代码
+                        putString("batteryNo_$appWidgetId", batteryNo)
+                        putString("cityCode_$appWidgetId", cityCode)
+
+                        // 保存刷新间隔
+                        val intervals = resources.getIntArray(R.array.refresh_interval_values)
+                        val selectedInterval = intervals[refreshIntervalSpinner.selectedItemPosition]
+                        putInt("refreshInterval_$batteryNo", selectedInterval)
+
+                    }
 
                     // 更新小部件
                     val appWidgetManager = AppWidgetManager.getInstance(this@BatteryWidgetConfigureActivity)
@@ -195,7 +201,7 @@ class BatteryWidgetConfigureActivity : AppCompatActivity() {
 
     private fun checkAndRequestExactAlarmPermission() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
-            val alarmManager = getSystemService(Context.ALARM_SERVICE) as AlarmManager
+            val alarmManager = getSystemService(ALARM_SERVICE) as AlarmManager
             if (!alarmManager.canScheduleExactAlarms()) {
                 // 跳转系统设置界面让用户授权
                 val intent = Intent(Settings.ACTION_REQUEST_SCHEDULE_EXACT_ALARM)
@@ -210,5 +216,29 @@ class BatteryWidgetConfigureActivity : AppCompatActivity() {
         val baseUrl: String,
         val refreshIntervalPosition: Int,
         val refreshIntervals: Array<String>
-    )
+    ) {
+        override fun equals(other: Any?): Boolean {
+            if (this === other) return true
+            if (javaClass != other?.javaClass) return false
+
+            other as InitData
+
+            if (refreshIntervalPosition != other.refreshIntervalPosition) return false
+            if (batteryNo != other.batteryNo) return false
+            if (cityCode != other.cityCode) return false
+            if (baseUrl != other.baseUrl) return false
+            if (!refreshIntervals.contentEquals(other.refreshIntervals)) return false
+
+            return true
+        }
+
+        override fun hashCode(): Int {
+            var result = refreshIntervalPosition
+            result = 31 * result + batteryNo.hashCode()
+            result = 31 * result + cityCode.hashCode()
+            result = 31 * result + baseUrl.hashCode()
+            result = 31 * result + refreshIntervals.contentHashCode()
+            return result
+        }
+    }
 } 
