@@ -12,7 +12,8 @@
         android:label="@string/app_name"
         android:supportsRtl="true"
         android:usesCleartextTraffic="true"
-        android:theme="@style/Theme.BatteryWidget">
+        android:theme="@style/Theme.BatteryWidget"
+        android:icon="@mipmap/ic_launcher">
 
 
         <activity
