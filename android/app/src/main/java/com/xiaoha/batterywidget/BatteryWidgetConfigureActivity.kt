@@ -6,10 +6,14 @@ import android.content.Context
 import android.os.Bundle
 import android.view.View
 import android.widget.*
-import android.util.Log
+import androidx.appcompat.app.AlertDialog
+
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.lifecycleScope
 import kotlinx.coroutines.*
+import android.app.AlarmManager
+import android.os.Build
+import android.provider.Settings
 
 class BatteryWidgetConfigureActivity : AppCompatActivity() {
     private var appWidgetId = AppWidgetManager.INVALID_APPWIDGET_ID
@@ -121,13 +125,18 @@ class BatteryWidgetConfigureActivity : AppCompatActivity() {
     }
 
     private fun saveConfiguration() {
+        checkAndRequestExactAlarmPermission()
         val batteryNo = batteryNoEdit.text.toString().trim()
         val cityCode = cityCodeEdit.text.toString().trim().let {
             if (it.isEmpty()) "0755" else it
         }
         
         if (batteryNo.isEmpty()) {
-            Toast.makeText(this, "请输入电池编号", Toast.LENGTH_SHORT).show()
+            AlertDialog.Builder(this@BatteryWidgetConfigureActivity)
+                .setTitle("保存失败")
+                .setMessage("请输入电池编号")
+                .setPositiveButton("确定", null)
+                .show()
             return
         }
 
@@ -165,9 +174,11 @@ class BatteryWidgetConfigureActivity : AppCompatActivity() {
                 finish()
             } catch (e: Exception) {
                 withContext(Dispatchers.Main) {
-                    Toast.makeText(this@BatteryWidgetConfigureActivity, 
-                        "保存失败：${e.message}", 
-                        Toast.LENGTH_SHORT).show()
+                    AlertDialog.Builder(this@BatteryWidgetConfigureActivity)
+                        .setTitle("保存失败")
+                        .setMessage(e.message ?: "未知错误")
+                        .setPositiveButton("确定", null)
+                        .show()
                     setInputsEnabled(true)
                     addButton.text = getString(R.string.add_widget)
                 }
@@ -180,6 +191,17 @@ class BatteryWidgetConfigureActivity : AppCompatActivity() {
         cityCodeEdit.isEnabled = enabled
         refreshIntervalSpinner.isEnabled = enabled
         addButton.isEnabled = enabled
+    }
+
+    private fun checkAndRequestExactAlarmPermission() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+            val alarmManager = getSystemService(Context.ALARM_SERVICE) as AlarmManager
+            if (!alarmManager.canScheduleExactAlarms()) {
+                // 跳转系统设置界面让用户授权
+                val intent = Intent(Settings.ACTION_REQUEST_SCHEDULE_EXACT_ALARM)
+                startActivity(intent)
+            }
+        }
     }
 
     private data class InitData(
