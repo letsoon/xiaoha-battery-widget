@@ -15,10 +15,9 @@ class BatteryWidgetConfigureActivity : AppCompatActivity() {
     private var appWidgetId = AppWidgetManager.INVALID_APPWIDGET_ID
     private lateinit var batteryNoEdit: EditText
     private lateinit var cityCodeEdit: EditText
+    private lateinit var baseUrlEdit: EditText
     private lateinit var refreshIntervalSpinner: Spinner
     private lateinit var addButton: Button
-    private lateinit var loadingView: View
-    private lateinit var contentView: View
     
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -34,8 +33,6 @@ class BatteryWidgetConfigureActivity : AppCompatActivity() {
         // 初始化视图引用
         initViews()
 
-        // 显示加载状态
-        showLoading(true)
 
         // 在后台初始化
         lifecycleScope.launch {
@@ -46,21 +43,22 @@ class BatteryWidgetConfigureActivity : AppCompatActivity() {
                     val savedBatteryNo = prefs.getString("batteryNo_$appWidgetId", "")
                     val savedCityCode = prefs.getString("cityCode_$appWidgetId", "0755")
                     val savedRefreshInterval = prefs.getInt("refreshInterval_$appWidgetId", 30)
+                    val baseUrl = prefs.getString("baseUrl", "https://xiaoha.linkof.link")
                     val refreshIntervals = resources.getStringArray(R.array.refresh_intervals)
                     val intervals = resources.getIntArray(R.array.refresh_intervals)
                     val position = intervals.indexOf(savedRefreshInterval)
                     InitData(
-                        savedBatteryNo ?: "",
-                        savedCityCode ?: "0755",
+                        savedBatteryNo.toString(),
+                        savedCityCode.toString(),
+                        baseUrl.toString(),
                         position,
-                        refreshIntervals
+                        refreshIntervals,
                     )
                 }
 
                 // 在主线程更新UI
                 withContext(Dispatchers.Main) {
                     setupViews(initData)
-                    showLoading(false)
                 }
             } catch (e: Exception) {
                 withContext(Dispatchers.Main) {
@@ -74,9 +72,8 @@ class BatteryWidgetConfigureActivity : AppCompatActivity() {
     }
 
     private fun initViews() {
-        loadingView = findViewById(R.id.loading_view)
-        contentView = findViewById(R.id.content_view)
         batteryNoEdit = findViewById(R.id.battery_no_edit)
+        baseUrlEdit = findViewById(R.id.base_url_edit)
         cityCodeEdit = findViewById(R.id.city_code_edit)
         refreshIntervalSpinner = findViewById(R.id.refresh_interval_spinner)
         addButton = findViewById(R.id.add_button)
@@ -94,15 +91,13 @@ class BatteryWidgetConfigureActivity : AppCompatActivity() {
         }
     }
 
-    private fun showLoading(show: Boolean) {
-        loadingView.visibility = if (show) View.VISIBLE else View.GONE
-        contentView.visibility = if (show) View.GONE else View.VISIBLE
-    }
+
 
     private fun setupViews(initData: InitData) {
         // 设置已保存的值
         batteryNoEdit.setText(initData.batteryNo)
         cityCodeEdit.setText(initData.cityCode)
+        baseUrlEdit.setText(initData.baseUrl)
 
         // 设置刷新间隔选项
         val adapter = ArrayAdapter(
@@ -190,6 +185,7 @@ class BatteryWidgetConfigureActivity : AppCompatActivity() {
     private data class InitData(
         val batteryNo: String,
         val cityCode: String,
+        val baseUrl: String,
         val refreshIntervalPosition: Int,
         val refreshIntervals: Array<String>
     )
