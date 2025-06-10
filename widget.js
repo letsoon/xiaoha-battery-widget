@@ -1,4 +1,4 @@
-const batteryNo = '8903115649'; // ← 可改成你的电池编号
+const batteryNo = '8903128939'; // ← 可改成你的电池编号
 const widget = new ListWidget();
 widget.backgroundColor = new Color("#0088fe");
 
@@ -21,7 +21,7 @@ async function createWidget() {
         const data = res.data;
 
         const reportDate = new Date(data.reportTime);
-        const formattedTime = `${reportDate.getMonth() + 1}/${reportDate.getDate()} ${reportDate.getHours()}:${String(reportDate.getMinutes()).padStart(2, '0')}`;
+        const formattedTime = `${reportDate.getFullYear()}/${reportDate.getMonth() + 1}/${reportDate.getDate()} ${reportDate.getHours()}:${String(reportDate.getMinutes()).padStart(2, '0')}`;
 
         widget.setPadding(0, 0, 0, 0);
 
@@ -58,31 +58,29 @@ async function createWidget() {
         const bottomStack = widget.addStack();
         bottomStack.layoutHorizontally();
         bottomStack.centerAlignContent();
-        bottomStack.setPadding(0, 80, 5, 5);
+        bottomStack.setPadding(10, 10, 10, 10);
 
         // 左下 logo
-        const logoStack = bottomStack.addStack();
-        const logoBase64 = "iVBORw0KGgoAAAANSUhEUgAAABwAAAAcCAMAAABF0y+mAAAAbFBMVEUAiP4Ah/4AhP4lj/4Agv4Af/6Qv//////R4/8Aff5Uov7w9//p8/9lqf/I3v/w9f+pzv9srP/4/P+82P+Huf7e6v9xsf99tf640/8ylP6hyf9Hnf6dxv8Ag/7k7/8Aev7X5/8Adv5AmP4RjP7GGMZdAAAA9klEQVR4AdXLBwKDIAxA0QSDwb23VKX3v2MZnUfodzAewJ+Gn1noy0T0WuL3aZKSgGJWAkFImaRZltsnK4S1sqrqpOG47aToq2po2pGbdsomi7KaS7Xwmmy8J3O18pgB6za6BZx2lXUH2dvbPGxccO6fJuCq0rW2TTgPKUMxTrYCIeB5daXNSI9LxcxtSU9UULsKjxGfy2a6m3xhw8MwtOpweB/NSkdeh5vjbpHk1Z0WN76T4a7nBR0OQ9bZ8zpRXdJzySQSwxwT2NCoLpLtWaxcCKzPlPou41iCD4kQzZDlk7ZzKag794XgKxSA+jkXpBF+Q/jzHpg8EYrSfggvAAAAAElFTkSuQmCC";
-        const logoImage = Image.fromData(Data.fromBase64String(logoBase64));
-        const logo = logoStack.addImage(logoImage);
-        logo.imageSize = new Size(20, 20); // 控制 logo 尺寸
-        logoStack.addSpacer(5);
+        // const logoStack = bottomStack.addStack();
+        // const logoBase64 = "iVBORw0KGgoAAAANSUhEUgAAABwAAAAcCAMAAABF0y+mAAAAbFBMVEUAiP4Ah/4AhP4lj/4Agv4Af/6Qv//////R4/8Aff5Uov7w9//p8/9lqf/I3v/w9f+pzv9srP/4/P+82P+Huf7e6v9xsf99tf640/8ylP6hyf9Hnf6dxv8Ag/7k7/8Aev7X5/8Adv5AmP4RjP7GGMZdAAAA9klEQVR4AdXLBwKDIAxA0QSDwb23VKX3v2MZnUfodzAewJ+Gn1noy0T0WuL3aZKSgGJWAkFImaRZltsnK4S1sqrqpOG47aToq2po2pGbdsomi7KaS7Xwmmy8J3O18pgB6za6BZx2lXUH2dvbPGxccO6fJuCq0rW2TTgPKUMxTrYCIeB5daXNSI9LxcxtSU9UULsKjxGfy2a6m3xhw8MwtOpweB/NSkdeh5vjbpHk1Z0WN76T4a7nBR0OQ9bZ8zpRXdJzySQSwxwT2NCoLpLtWaxcCKzPlPou41iCD4kQzZDlk7ZzKag794XgKxSA+jkXpBF+Q/jzHpg8EYrSfggvAAAAAElFTkSuQmCC";
+        // const logoImage = Image.fromData(Data.fromBase64String(logoBase64));
+        // const logo = logoStack.addImage(logoImage);
+        // logo.imageSize = new Size(20, 20); // 控制 logo 尺寸
+        // logoStack.addSpacer(5);
 
         // 右下角文本
         const infoStack = bottomStack.addStack();
         infoStack.layoutVertically();
 
-        const idText = infoStack.addText(batteryNo);
-        idText.font = Font.systemFont(7);
+        const idText = infoStack.addText(`电池编号：${batteryNo}`);
+        idText.font = Font.systemFont(10);
         idText.textColor = Color.white();
-        idText.rightAlignText();
-        idText.textOpacity = 0.8;
+        idText.centerAlignText();
 
-        const timeText = infoStack.addText(formattedTime);
-        timeText.font = Font.systemFont(7);
+        const timeText = infoStack.addText(`上报时间：${formattedTime}`);
+        timeText.font = Font.systemFont(10);
         timeText.textColor = Color.white();
-        timeText.rightAlignText();
-        timeText.textOpacity = 0.8;
+        timeText.centerAlignText();
 
         Script.setWidget(widget);
     } catch (err) {
