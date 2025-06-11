@@ -21,7 +21,7 @@ async function createWidget() {
         const data = res.data;
 
         const reportDate = new Date(data.reportTime);
-        const formattedTime = `${reportDate.getFullYear()}/${reportDate.getMonth() + 1}/${reportDate.getDate()} ${reportDate.getHours()}:${String(reportDate.getMinutes()).padStart(2, '0')}`;
+        const formattedTime = `${reportDate.getFullYear()}/${reportDate.getMonth() + 1}/${reportDate.getDate()} ${reportDate.getHours()}:${String(reportDate.getMinutes()).padStart(2, '0')}:${String(reportDate.getSeconds()).padStart(2, '0')}`;
 
         widget.setPadding(0, 0, 0, 0);
 
@@ -58,6 +58,7 @@ async function createWidget() {
         const bottomStack = widget.addStack();
         bottomStack.layoutHorizontally();
         bottomStack.centerAlignContent();
+        bottomStack.centerAlignText();
         bottomStack.setPadding(10, 10, 10, 10);
 
         // 左下 logo
