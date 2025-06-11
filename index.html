@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>小哈电量</title>
+  <script>
+    window.onload = function() {
+
+      const params = new URLSearchParams(window.location.search);
+      const batteryNo = params.get(batteryNo) || '8903128939';
+      fetch(`https://xiaoha.linkof.link/?batteryNo=${batteryNo}&format=json`)
+      .then(response => response.json())
+      .then(data => {
+        console.log(data);
+        const update = document.querySelector('.update');
+        const circle = document.querySelector('.circle');
+        const battery = document.querySelector('.batteryNo');
+        circle.innerHTML = data.data.batteryLife;
+        battery.innerHTML = `电池编号：${batteryNo}`;
+        update.innerHTML = `上报时间：${data.data.reportTime}`;
+      })
+      .catch(err => {
+        console.error('Fetch error:', err);
+      });
+    }
+  </script>
+</head>
+<body>
+  <div id="app">
+    <div class="circle"></div>
+    <div class="batteryNo"></div>
+    <div class="updateDate"></div>
+  </div>
+</body>
+</html>
