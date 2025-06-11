@@ -20,6 +20,14 @@ async function createWidget() {
         const res = await req.loadJSON();
         const data = res.data;
 
+        if(data.batteryLife >= 60){
+            widget.backgroundColor = new Color("#7bf1a8");
+        }else if(data.batteryLife > 20){
+            widget.backgroundColor = new Color("#fef9c2");
+        }else{
+            widget.backgroundColor = new Color("#ff6467");
+        }
+
         const reportDate = new Date(data.reportTime);
         const df = new DateFormatter();
         df.dateFormat = "yyyy/MM/dd HH:mm:ss"; // 可自定义格式
