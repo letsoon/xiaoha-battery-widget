@@ -8,7 +8,7 @@
     window.onload = function() {
 
       const params = new URLSearchParams(window.location.search);
-      const batteryNo = params.get(batteryNo) || '8903128939';
+      const batteryNo = params.get('batteryNo') || '8903128939';
       fetch(`https://xiaoha.linkof.link/?batteryNo=${batteryNo}&format=json`)
       .then(response => response.json())
       .then(data => {
