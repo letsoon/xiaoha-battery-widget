@@ -93,6 +93,13 @@ async function createWidget() {
         timeText.textColor = Color.white();
         timeText.centerAlignText();
         Script.setWidget(widget);
+
+        if (!config.runsInWidget) {
+          let notify = new Notification();
+          notify.title = "电池信息";
+          notify.body = `电池电量：${data.batteryLife}%`;
+          await notify.schedule();
+        }
     } catch (err) {
         console.error(err);
         const errorText = widget.addText("加载失败");
