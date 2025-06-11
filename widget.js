@@ -86,9 +86,11 @@ async function createWidget() {
         timeText.centerAlignText();
 
          // 5分钟刷新
-        let nextRefresh = new Date();
-        nextRefresh.setMinutes(nextRefresh.getMinutes() + 5);
-        widget.refreshAfterDate(nextRefresh);
+        if (config.runsInWidget()) {
+          let nextRefresh = new Date();
+          nextRefresh.setMinutes(nextRefresh.getMinutes() + 5);
+          widget.refreshAfterDate(nextRefresh);
+        }
 
         Script.setWidget(widget);
         
@@ -100,10 +102,12 @@ async function createWidget() {
         errorText.textColor = Color.white();
         errorText.centerAlignText();
 
-        // 5分钟刷新
-        let nextRefresh = new Date();
-        nextRefresh.setMinutes(nextRefresh.getMinutes() + 5);
-        widget.refreshAfterDate(nextRefresh);
+         // 5分钟刷新
+        if (config.runsInWidget()) {
+          let nextRefresh = new Date();
+          nextRefresh.setMinutes(nextRefresh.getMinutes() + 5);
+          widget.refreshAfterDate(nextRefresh);
+        }
         
         Script.setWidget(widget);
 
