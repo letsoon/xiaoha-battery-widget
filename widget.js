@@ -85,24 +85,28 @@ async function createWidget() {
         timeText.textColor = Color.white();
         timeText.centerAlignText();
 
-        Script.setWidget(widget);
-        
-        // 5分钟刷新
+         // 5分钟刷新
         let nextRefresh = new Date();
         nextRefresh.setMinutes(nextRefresh.getMinutes() + 5);
         widget.refreshAfterDate(nextRefresh);
+
+        Script.setWidget(widget);
+        
+       
     } catch (err) {
         console.error(err);
         const errorText = widget.addText("加载失败");
         errorText.font = Font.systemFont(10);
         errorText.textColor = Color.white();
         errorText.centerAlignText();
-        Script.setWidget(widget);
 
         // 5分钟刷新
         let nextRefresh = new Date();
         nextRefresh.setMinutes(nextRefresh.getMinutes() + 5);
         widget.refreshAfterDate(nextRefresh);
+        
+        Script.setWidget(widget);
+
     }
 }
 
