@@ -21,7 +21,9 @@ async function createWidget() {
         const data = res.data;
 
         const reportDate = new Date(data.reportTime);
-        const formattedTime = `${reportDate.getFullYear()}/${reportDate.getMonth() + 1}/${String(reportDate.getDate()).padStart(2, '0')} ${reportDate.getHours()}:${String(reportDate.getMinutes()).padStart(2, '0')}:${String(reportDate.getSeconds()).padStart(2, '0')}`;
+        const df = new DateFormatter();
+        df.dateFormat = "yyyy/MM/dd HH:mm:ss"; // 可自定义格式
+        const formattedTime = df.string(reportDate);
 
         widget.setPadding(0, 0, 0, 0);
 
@@ -58,7 +60,7 @@ async function createWidget() {
         const bottomStack = widget.addStack();
         bottomStack.layoutHorizontally();
         bottomStack.centerAlignContent();
-        // bottomStack.setPadding(10, 10, 10, 10);
+        bottomStack.setPadding(10, 10, 10, 10);
 
         // 左下 logo
         // const logoStack = bottomStack.addStack();
@@ -71,6 +73,7 @@ async function createWidget() {
         // 右下角文本
         const infoStack = bottomStack.addStack();
         infoStack.layoutVertically();
+        infoStack.centerAlignContent(); // ← 加这一句
 
         const idText = infoStack.addText(`电池编号：${batteryNo}`);
         idText.font = Font.systemFont(10);
@@ -83,6 +86,11 @@ async function createWidget() {
         timeText.centerAlignText();
 
         Script.setWidget(widget);
+        
+        // 5分钟刷新
+        let nextRefresh = new Date();
+        nextRefresh.setMinutes(nextRefresh.getMinutes() + 5);
+        widget.refreshAfterDate(nextRefresh);
     } catch (err) {
         console.error(err);
         const errorText = widget.addText("加载失败");
@@ -90,6 +98,11 @@ async function createWidget() {
         errorText.textColor = Color.white();
         errorText.centerAlignText();
         Script.setWidget(widget);
+
+        // 5分钟刷新
+        let nextRefresh = new Date();
+        nextRefresh.setMinutes(nextRefresh.getMinutes() + 5);
+        widget.refreshAfterDate(nextRefresh);
     }
 }
 
