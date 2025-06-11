@@ -92,6 +92,7 @@ async function createWidget() {
         timeText.font = Font.systemFont(10);
         timeText.textColor = Color.white();
         timeText.centerAlignText();
+        Script.setWidget(widget);
 
          // 5分钟刷新
         if (config.runsInWidget) {
@@ -100,7 +101,6 @@ async function createWidget() {
           widget.refreshAfterDate(nextRefresh);
         }
 
-        Script.setWidget(widget);
         
        
     } catch (err) {
@@ -109,6 +109,7 @@ async function createWidget() {
         errorText.font = Font.systemFont(10);
         errorText.textColor = Color.white();
         errorText.centerAlignText();
+        Script.setWidget(widget);
 
          // 5分钟刷新
         if (config.runsInWidget) {
@@ -117,7 +118,6 @@ async function createWidget() {
           widget.refreshAfterDate(nextRefresh);
         }
         
-        Script.setWidget(widget);
 
     }
 }
