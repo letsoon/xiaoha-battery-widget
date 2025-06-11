@@ -9,7 +9,14 @@
 
       const params = new URLSearchParams(window.location.search);
       const batteryNo = params.get('batteryNo') || '8903128939';
-      fetch(`https://xiaoha.linkof.link/?batteryNo=${batteryNo}&format=json`)
+      fetch(`https://xiaoha.linkof.link/?batteryNo=${batteryNo}&format=json`,{
+        method: 'GET', // 或 POST
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        credentials: 'include', // 如果需要携带 cookie，需设置此项，后端也要支持
+        mode: 'cors' // 默认就是 cors，可以省略
+      })
       .then(response => response.json())
       .then(data => {
         console.log(data);
