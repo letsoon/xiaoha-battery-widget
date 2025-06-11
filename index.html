@@ -19,12 +19,12 @@
       .then(response => response.json())
       .then(data => {
         console.log(data);
-        const update = document.querySelector('.update');
+        const updateDate = document.querySelector('.updateDate');
         const circle = document.querySelector('.circle');
         const battery = document.querySelector('.batteryNo');
         circle.innerHTML = data.data.batteryLife;
         battery.innerHTML = `电池编号：${batteryNo}`;
-        update.innerHTML = `上报时间：${data.data.reportTime}`;
+        updateDate.innerHTML = `上报时间：${data.data.reportTime}`;
       })
       .catch(err => {
         console.error('Fetch error:', err);
