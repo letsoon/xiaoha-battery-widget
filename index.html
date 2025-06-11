@@ -14,7 +14,6 @@
         headers: {
           'Content-Type': 'application/json'
         },
-        credentials: 'include', // 如果需要携带 cookie，需设置此项，后端也要支持
         mode: 'cors' // 默认就是 cors，可以省略
       })
       .then(response => response.json())
