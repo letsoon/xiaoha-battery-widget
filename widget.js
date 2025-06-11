@@ -78,7 +78,7 @@ async function createWidget() {
         idText.textColor = Color.white();
         idText.centerAlignText();
 
-        const timeText = infoStack.addText(`上报时间：${formattedTime}`);
+        const timeText = infoStack.addText(`更新：${formattedTime}`);
         timeText.font = Font.systemFont(10);
         timeText.textColor = Color.white();
         timeText.centerAlignText();
