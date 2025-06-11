@@ -86,7 +86,7 @@ async function createWidget() {
         timeText.centerAlignText();
 
          // 5分钟刷新
-        if (config.runsInWidget()) {
+        if (config.runsInWidget) {
           let nextRefresh = new Date();
           nextRefresh.setMinutes(nextRefresh.getMinutes() + 5);
           widget.refreshAfterDate(nextRefresh);
@@ -103,7 +103,7 @@ async function createWidget() {
         errorText.centerAlignText();
 
          // 5分钟刷新
-        if (config.runsInWidget()) {
+        if (config.runsInWidget) {
           let nextRefresh = new Date();
           nextRefresh.setMinutes(nextRefresh.getMinutes() + 5);
           widget.refreshAfterDate(nextRefresh);
