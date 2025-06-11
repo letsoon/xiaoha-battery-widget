@@ -9,7 +9,7 @@
 
       const params = new URLSearchParams(window.location.search);
       const batteryNo = params.get('batteryNo') || '8903128939';
-      fetch(`https://xiaoha.linkof.link/?batteryNo=${batteryNo}&format=json`,{
+      fetch(`https://battery.letsoon.workers.dev/?batteryNo=${batteryNo}`,{
         method: 'GET', // 或 POST
         headers: {
           'Content-Type': 'application/json'
